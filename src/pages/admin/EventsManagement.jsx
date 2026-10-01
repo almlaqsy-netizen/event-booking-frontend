@@ -1,137 +1,3 @@
-// import { useState,useEffect } from "react"
-// import api from "../../api/axios";
-// import { Link } from "react-router-dom";
-// export default function EventsManagement(){
-//     const [events,setEvents]=useState([])
-//     // summary
-//     const [active,setActive]=useState("")
-//     const [registration_closed,setRegistration_closed]=useState("")
-//     const [ended,setEnded]=useState("")
-//     const [cancelled,setCancelled]=useState("")
-
-//     const [error,setError]=useState("")
-//     const [loading,setLoading]=useState(true)
-
-//     const[message,setMessage]=useState("")
-
-// useEffect(()=>{
-
-// async function index() {
-//     try{
-//         const response=await api.get('/admin/events')
-
-//         setEvents(response.data.events)
-
-//         setActive(response.data.summary.active)
-//         setRegistration_closed(response.data.summary.registration_closed)
-//         setEnded(response.data.summary.ended)
-//         setCancelled(response.data.summary.cancelled)
-        
-//     }
-
-// catch(error){
-//  setError(error.response?.data?.message)
-// }
-// finally{
-//     setLoading(false)
-// }
-
-// }
-// index()
-// },[]);   
-
-// if(loading)
-//     return <p>loading...</p>
-
-// if(error)
-//     return <p>{error}</p>
-
-// async function cancel(id) {
-//     try{
-//     const response=await api.patch(`/admin/events/${id}/cancel`)
-//     setMessage(response.data.message)
-//     }
-//     catch(error){
-//         setError(error.response?.data?.message)
-//     }
-// }
-
-//     return(
-//         <div>
-//             <Link to="/admin/create-event">
-//                 <button>Create new event</button>
-//             </Link>
-//             <div>
-//                 <h1>summary</h1>
-//                 <p>active evets:{active}</p>
-//                 <p>registration_closed events:{registration_closed}</p>
-//                 <p>ended events:{ended}</p>
-//                 <p>cancelled events:{cancelled}</p>
-//             </div>
-//          {message&& <p>{message}</p>}
-//             <table>
-//                 <thead>
-//                     <tr>
-//                         <th>Title</th>
-//                         <th>Description</th>
-//                         <th>Location</th>
-//                         <th>Event start at</th>
-//                         <th>Event end at</th>
-//                         <th>Registration deadline</th>
-//                         <th>Total seats</th>
-//                         <th>Available seats</th>
-//                         <th>Price</th>
-//                         <th>Actions</th>
-//                     </tr>
-//                 </thead>
-
-
-//                 <tbody>
-//                     {events.map((event)=>(
-                        
-//                         <tr key={event.id}>
-//                             <td>
-//                                 {event.title}
-//                             </td>
-//                             <td>
-//                                 {event.description}
-//                             </td>
-//                             <td>
-//                                 {event.location}
-//                             </td>
-//                             <td>
-//                                 {event.event_start_at}
-//                             </td>
-//                             <td>
-//                                 {event.event_end_at}
-//                             </td>
-//                             <td>
-//                                 {event.registration_deadline}
-//                             </td>
-//                             <td>
-//                                 {event.total_seats}
-//                             </td>
-//                             <td>
-//                                 {event.available_seats}
-//                             </td>
-//                             <td>
-//                                 {event.price}
-//                             </td>
-//                             <td>
-//                                 <button onClick={()=>{cancel(event.id)}}>cancel event</button> <br />
-//                             </td>
-//                         </tr>   
-//                     ))}
-//                 </tbody>
-//             </table>
-
-//         </div>
-
-//     )
-// }
-
-
-
 import { useState, useEffect } from "react";
 import api from "../../api/axios";
 import { Link } from "react-router-dom";
@@ -142,57 +8,68 @@ import "../../styles/admin.css";
 export default function EventsManagement() {
     const [events, setEvents] = useState([]);
 
-    const [active, setActive] = useState("");
-    const [registration_closed, setRegistration_closed] = useState("");
-    const [ended, setEnded] = useState("");
-    const [cancelled, setCancelled] = useState("");
+    const [active, setActive] = useState(0);
+    const [registration_closed, setRegistration_closed] = useState(0);
+    const [ended, setEnded] = useState(0);
+    const [cancelled, setCancelled] = useState(0);
 
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("active");
 
- 
-async function fetchEvents() {
-    try {
-        setLoading(true);
-        setError("");
+    async function fetchEvents(status = selectedStatus) {
+        try {
+            setLoading(true);
+            setError("");
 
-        const response = await api.get("/admin/events");
+            const response = await api.get("/admin/events", {
+                params: {
+                    status: status,
+                },
+            });
 
-        setEvents(response.data.events);
-        setActive(response.data.summary.active);
-        setRegistration_closed(
-            response.data.summary.registration_closed
-        );
-        setEnded(response.data.summary.ended);
-        setCancelled(response.data.summary.cancelled);
+            setEvents(response.data.events || []);
 
-    } catch (error) {
-        setError(
-            error.response?.data?.message ||
-            "Failed to fetch events"
-        );
-    } finally {
-        setLoading(false);
+            setActive(response.data.summary.active);
+            setRegistration_closed(
+                response.data.summary.registration_closed
+            );
+            setEnded(response.data.summary.ended);
+            setCancelled(response.data.summary.cancelled);
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Failed to fetch events"
+            );
+        } finally {
+            setLoading(false);
+        }
     }
-}
-function formatDate(date) {
 
-    return new Date(date).toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    useEffect(() => {
+        fetchEvents("active");
+    }, []);
 
-}
-useEffect(() => {
-    fetchEvents();
-}, []);
+    function formatDate(date) {
+        if (!date) return "-";
 
+        return new Date(date).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    }
 
     async function cancel(id) {
+        const confirmed = window.confirm(
+            "Are you sure you want to cancel this event?"
+        );
+
+        if (!confirmed) return;
+
         try {
             setError("");
             setMessage("");
@@ -205,14 +82,19 @@ useEffect(() => {
                 response.data.message || "Event cancelled successfully"
             );
 
-            await fetchEvents();
-
+            await fetchEvents(selectedStatus);
         } catch (error) {
             setError(
                 error.response?.data?.message ||
                 "Failed to cancel event"
             );
         }
+    }
+
+    function handleStatusChange(status) {
+        setSelectedStatus(status);
+        setMessage("");
+        fetchEvents(status);
     }
 
     if (loading) {
@@ -240,6 +122,13 @@ useEffect(() => {
                     <div className="admin-error-message">
                         {error}
                     </div>
+
+                    <button
+                        className="admin-primary-button"
+                        onClick={() => fetchEvents(selectedStatus)}
+                    >
+                        Retry
+                    </button>
                 </main>
             </div>
         );
@@ -247,15 +136,11 @@ useEffect(() => {
 
     return (
         <div className="admin-layout">
-
             <Navbar />
-
             <Sidebar role="admin" />
 
             <main className="admin-main">
-
                 <div className="admin-header admin-header-with-action">
-
                     <div>
                         <h1>Events Management</h1>
                         <p>
@@ -269,7 +154,6 @@ useEffect(() => {
                     >
                         + Create Event
                     </Link>
-
                 </div>
 
                 {message && (
@@ -285,7 +169,6 @@ useEffect(() => {
                 )}
 
                 <section className="admin-summary">
-
                     <div className="summary-card">
                         <span className="summary-icon">🟢</span>
                         <div>
@@ -317,36 +200,75 @@ useEffect(() => {
                             <strong>{cancelled}</strong>
                         </div>
                     </div>
-
                 </section>
 
                 <section className="admin-table-card">
-
                     <div className="admin-table-header">
                         <div>
-                            <h2>All Events</h2>
+                            <h2>Events</h2>
                             <p>
-                                View and manage all registered events.
+                                Filter events by their current status.
                             </p>
                         </div>
                     </div>
 
-                    {events.length === 0 ? (
+                    <div className="event-status-filters">
+                        <button
+                            type="button"
+                            className={
+                                selectedStatus === "active" ? "selected" : ""
+                            }
+                            onClick={() => handleStatusChange("active")}
+                        >
+                            Active ({active})
+                        </button>
 
+                        <button
+                            type="button"
+                            className={
+                                selectedStatus === "registration_closed"
+                                    ? "selected"
+                                    : ""
+                            }
+                            onClick={() =>
+                                handleStatusChange("registration_closed")
+                            }
+                        >
+                            Registration Closed ({registration_closed})
+                        </button>
+
+                        <button
+                            type="button"
+                            className={
+                                selectedStatus === "ended" ? "selected" : ""
+                            }
+                            onClick={() => handleStatusChange("ended")}
+                        >
+                            Ended ({ended})
+                        </button>
+
+                        <button
+                            type="button"
+                            className={
+                                selectedStatus === "cancelled" ? "selected" : ""
+                            }
+                            onClick={() => handleStatusChange("cancelled")}
+                        >
+                            Cancelled ({cancelled})
+                        </button>
+                    </div>
+
+                    {events.length === 0 ? (
                         <div className="admin-empty-state">
                             <div>📅</div>
-                            <h3>No events available</h3>
+                            <h3>No events found</h3>
                             <p>
-                                There are currently no events in the system.
+                                There are no events with this status.
                             </p>
                         </div>
-
                     ) : (
-
                         <div className="admin-table-wrapper">
-
                             <table className="admin-table">
-
                                 <thead>
                                     <tr>
                                         <th>Title</th>
@@ -358,16 +280,14 @@ useEffect(() => {
                                         <th>Total Seats</th>
                                         <th>Available Seats</th>
                                         <th>Price</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-
                                     {events.map((event) => (
-
                                         <tr key={event.id}>
-
                                             <td className="table-title">
                                                 {event.title}
                                             </td>
@@ -376,9 +296,7 @@ useEffect(() => {
                                                 {event.description}
                                             </td>
 
-                                            <td>
-                                                {event.location}
-                                            </td>
+                                            <td>{event.location}</td>
 
                                             <td>
                                                 {formatDate(event.event_start_at)}
@@ -389,48 +307,37 @@ useEffect(() => {
                                             </td>
 
                                             <td>
-                                                {formatDate(event.registration_deadline)}
+                                                {formatDate(
+                                                    event.registration_deadline
+                                                )}
                                             </td>
+
+                                            <td>{event.total_seats}</td>
+                                            <td>{event.available_seats}</td>
+                                            <td>{event.price}</td>
+                                            <td>{event.status}</td>
 
                                             <td>
-                                                {event.total_seats}
+                                                {event.status === "active" && (
+                                                    <button
+                                                        type="button"
+                                                        className="admin-danger-button"
+                                                        onClick={() =>
+                                                            cancel(event.id)
+                                                        }
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                )}
                                             </td>
-
-                                            <td>
-                                                {event.available_seats}
-                                            </td>
-
-                                            <td>
-                                                {event.price}
-                                            </td>
-
-                                            <td>
-                                                <button
-                                                    className="admin-danger-button"
-                                                    onClick={() =>
-                                                        cancel(event.id)
-                                                    }
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </td>
-
                                         </tr>
-
                                     ))}
-
                                 </tbody>
-
                             </table>
-
                         </div>
-
                     )}
-
                 </section>
-
             </main>
         </div>
     );
 }
-
