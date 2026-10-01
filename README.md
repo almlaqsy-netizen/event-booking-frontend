@@ -42,6 +42,7 @@ The original dashboard was built using Laravel Blade, and this project implement
 
 ### Frontend Features
 
+- Light and dark mode support across application interfaces
 - React functional components and hooks
 - Client-side routing with React Router DOM
 - API integration using Axios
