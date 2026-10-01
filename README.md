@@ -235,7 +235,7 @@ This frontend depends on the Laravel REST API for authentication, event manageme
 
 The backend is responsible for data persistence, business logic, and server-side authorization.
 
-**Backend Repository:** [Add your Laravel backend repository URL here]
+**Backend Repository:** [https://github.com/almlaqsy-netizen/event-booking-system.git]
 
 ## Project Structure
 
